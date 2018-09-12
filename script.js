@@ -44,7 +44,7 @@ let setCustomPlayerEvents = function() {
 			audioPlayer.volume = 0;
 		}
 	};
-  
+
 	videoPlayer.ontimeupdate = function() {
 		if (Math.abs(videoPlayer.currentTime - audioPlayer.currentTime) > 0.25) {
 			audioPlayer.currentTime = videoPlayer.currentTime;
@@ -80,14 +80,19 @@ let loadPlayer = function(type, urlVideo) {
 		}
 		if (request.status >= 200 && request.status < 400) {
 			try {
-				document.title = data[0].data.children[0].data.title;
-				let redditVideoData = data[0].data.children[0].data.media.reddit_video;
-				let idPost = data[0].data.children[0].data.id;
-				if (redditVideoData) {
-					if (type === "custom") {
-						loadVideoUrl(redditVideoData);
-					} else {
-						loadVideoFrame(idPost);
+				let postData = data[0].data.children[0].data;
+				if (postData.crosspost_parent_list) {
+					loadPlayer(type, postData.crosspost_parent_list[0].permalink);
+				} else {
+					document.title = postData.title;
+					let redditVideoData = postData.media.reddit_video;
+					let idPost = postData.id;
+					if (redditVideoData) {
+						if (type === "custom") {
+							loadVideoUrl(redditVideoData);
+						} else {
+							loadVideoFrame(idPost);
+						}
 					}
 				}
 			} catch (error) {
@@ -101,7 +106,12 @@ let loadPlayer = function(type, urlVideo) {
 	request.onerror = function() {
 		loader.style.display = "none";
 		videoContainer.style.display = "block";
-		videoContainer.innerHTML = "<h1>Error</h1><h2>Network request failed</h2>";
+		let errorMessage = "Video request failed";
+		let isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+		if (isFirefox) {
+			errorMessage += " (Possibly blocked by Firefox's Tracking Protection)"
+		}
+		videoContainer.innerHTML = "<h1>Error</h1><h2>" + errorMessage + "</h2>";
 	};
 	request.send();
 };
@@ -132,7 +142,14 @@ let getEmbededUrl = function(idPost) {
 
 let loadVideoFrame = function(idPost) {
 	urlVideo = getEmbededUrl(idPost);
-	document.querySelector(".video-wrapper").innerHTML = '<iframe allowfullscreen="" scrolling="no" src="' + urlVideo + '" frameborder="0"></iframe>';
+	document.querySelector(".video-wrapper").innerHTML = '<iframe allowfullscreen="" scrolling="no" src="' + urlVideo + '" frameborder="0" onload="checkFrame()"></iframe>';
+};
+
+let checkFrame = function() {
+	let iframeAltTextNode = document.createElement("h3");
+	iframeAltTextNode.className = "iframe-alt-text";
+	iframeAltTextNode.innerHTML = "If you can read this, the embedded player could not be loaded";
+	document.querySelector(".video-wrapper").append(iframeAltTextNode);
 };
 
 let changeToggle = function(embeddedSelected) {
