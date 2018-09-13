@@ -78,11 +78,11 @@ video-js.vjs-ended .vjs-big-play-button,.video-js.vjs-paused .vjs-big-play-butto
 }
 
 .video-js:hover .vjs-big-play-button,.video-js .vjs-big-play-button:focus,.video-js .vjs-big-play-button:active {
-    background-color: #1888cc
+    background-color: #3BCB56
 }
 
 .video-js .vjs-loading-spinner {
-    border-color: #1888cc
+    border-color: #3BCB56
 }
 
 .video-js .vjs-control-bar2 {
@@ -96,7 +96,7 @@ video-js.vjs-ended .vjs-big-play-button,.video-js.vjs-paused .vjs-big-play-butto
 }
 
 .video-js .vjs-play-progress,.video-js  .vjs-volume-level {
-    background-color: #1888cc
+    background-color: #3BCB56
 }
 
 .video-js .vjs-load-progress {
