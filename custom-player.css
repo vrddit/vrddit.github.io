@@ -4,7 +4,7 @@
 
 #video-player {
   margin: auto;
-  max-height: 90vh;
+  max-height: 85vh;
   max-width: 90vw;
   overflow: hidden;
   min-width: 260px;
