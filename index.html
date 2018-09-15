@@ -22,6 +22,13 @@
 		};
 	</script>
 	<script src="https://cdn.trackjs.com/releases/current/tracker.js"></script>
+	<script>
+		try { if (new URLSearchParams('q=%2B').get('q') !== '+') throw {}; }
+		catch (error) {
+			window.URLSearchParams = void 0;
+			document.write('<script src="url-search-params/url-search-params.js"><'+'/script>');
+		}
+	</script>
 	<script type="text/javascript" src="videojs/video.js"></script>
 	<script type="text/javascript" src="script.js"></script>
 </head>
