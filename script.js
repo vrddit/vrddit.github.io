@@ -75,7 +75,6 @@ let loadPlayer = function(type, urlVideo) {
 		try {
 			data = JSON.parse(request.responseText);
 		} catch (error) {
-			trackJs.track(error);
 			videoContainer.innerHTML = "<h1>Error</h1><h2>Video request failed</h2>";
 			return;
 		}
@@ -98,11 +97,9 @@ let loadPlayer = function(type, urlVideo) {
 				}
 			} catch (error) {
 				console.log(error);
-				trackJs.track(error);
 				videoContainer.innerHTML = "<h1>Error</h1><h2>URL doesn\'t have a v.redd.it video</h2>";
 			}
 		} else {
-			trackJs.track(data);
 			videoContainer.innerHTML = "<h1>" + data.error + "</h1><h2>" + data.message + "</h2>";
 		}
 	};
