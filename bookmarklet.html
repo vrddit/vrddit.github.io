@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Bookmarklet for v.redd.it</title>
+	<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16x16.png">
+	<link rel="manifest" href="icons/site.webmanifest">
+	<link rel="mask-icon" href="icons/safari-pinned-tab.svg" color="#3bcb56">
+	<meta name="msapplication-TileColor" content="#3bcb56">
+	<meta name="theme-color" content="#3bcb56">
+	<link rel="shortcut icon" href="icons/favicon.ico">
+	<meta name="msapplication-config" content="icons/browserconfig.xml">
+	<link rel="stylesheet" type="text/css" href="style.css">
+	<link rel="stylesheet" type="text/css" href="font/typicons.min.css">
+</head>
+<body>
+	<style>
+		.instructions {
+			display: flex;
+			flex-direction: column;
+			align-items: flex-start;
+		}
+		.bookmark {
+			align-self: center;
+		}
+		i {
+			background-color: rgb(59, 203, 86);
+			border-radius: 3px;
+			color: white;
+			padding: 0 10px;
+		}
+		a {
+			position: inherit;
+			opacity: 1;
+			font-size: 25px;
+			padding: 0;
+			outline: none;
+		}
+		p {
+			font-size: 25px;
+		}
+	</style>
+	<div class="main-content">
+		<div class="instructions">
+			<p>1) Drag this bookmarklet to your bookmarks bar</p>
+			<div class="bookmark">
+				<a id="link-bookmarklet" href="">
+					<i class="typcn typcn-bookmark">Get v.redd.it links!</i>
+				</a>
+			</div>
+			<p>2) Open the bookmarklet in a v.redd.it post to get the sharing links</p>
+		</div>
+	</div>
+	<script type="text/javascript">
+		let bookmarkFunction = function() {
+			let dynamicallyLoadScript = function(url) {
+				var script = document.createElement("script");
+				script.src = url;
+				document.head.appendChild(script);
+			}
+
+			let copyToClipboard = function(str) {
+				let textarea = document.createElement('textarea');
+				textarea.value = str;
+				document.body.appendChild(textarea);
+				textarea.select();
+				document.execCommand('copy');
+				document.body.removeChild(textarea);
+			};
+
+			let checkAndFixUrl = function(url) {
+				let posReddit = url.indexOf("r/");
+				if (posReddit !== -1) {
+					let urlPath = url.substring(posReddit, url.length);
+					return "https://www.reddit.com/" + urlPath;
+				}
+			};
+
+			let getCustomUrl = function(url) {
+				url = url.split("/").slice(0,-2).join("/");
+				return url.replace("reddit.com/r", "vrddit.com/r");
+			};
+
+			let getVideoInfo = function(urlVideo) {
+				let request = new XMLHttpRequest();
+				urlVideo = checkAndFixUrl(urlVideo);
+				request.open("GET", urlVideo + "/.json", true);
+				request.onload = function() {
+					let data;
+					try {
+						data = JSON.parse(request.responseText);
+					} catch (error) {
+						// alert("Error: Video request failed");
+						swal({
+							title: "Error",
+							text: "Video request failed",
+							type: "error",
+							showCloseButton: true,
+							showConfirmButton: false
+						});
+						return;
+					}
+					if (request.status >= 200 && request.status < 400) {
+						try {
+							let postData = data[0].data.children[0].data;
+							if (postData.crosspost_parent_list) {
+								getVideoInfo(postData.crosspost_parent_list[0].permalink);
+							} else {
+								let title = postData.title;
+								let redditVideoData = postData.media.reddit_video;
+								let idPost = postData.id;
+								if (redditVideoData) {
+									let urlCustomPlayer = getCustomUrl(urlVideo);
+									let urlDirectVideo = redditVideoData.fallback_url;
+									let urlRedditPlayer = "https://www.reddit.com/mediaembed/" + idPost;
+									// alert("Video: " + title + "\n\nCustom Player: " + urlCustomPlayer + "\n\nReddit Player: " + urlRedditPlayer + "\n\nDirect: " + urlDirectVideo + "\n\n");
+									swal({
+										title: '<strong>Links for this v.redd.it video</strong>',
+										html:
+											'<style>.vrdditBtn{display: inline-block;padding: 3px 12px;font-size: 14px;font-weight: 400;line-height: 1.42857143;text-align: center;white-space: nowrap;vertical-align: middle;cursor: pointer;-webkit-user-select: none;-moz-user-select: none;-ms-user-select: none;user-select: none;background-image: none;border: 1px solid transparent;color: #fff;background-color: #28a745;border-color: #28a745;border-radius: 3px;}</style>' +
+											'<label for="custom-input" style="display: block; margin: 5px auto;">Custom Player</label>' +
+											'<a href="' + urlCustomPlayer + '" target="_blank"><input name="custom-input" value="' + urlCustomPlayer + '" style="display: block; width: 100%; text-align: center; margin: 5px auto; color: blue; text-decoration: underline; cursor: pointer;"></a>' +
+											'<input id="btnCustomPlyr" class="vrdditBtn" type="button" style="display: block; margin: 5px auto 10px auto;" value="Copy">' +
+											'<label for="reddit-input" style="display: block; margin: 5px auto;">Reddit Player</label>' +
+											'<a href="' + urlRedditPlayer + '" target="_blank"><input name="reddit-input" value="' + urlRedditPlayer + '" style="display: block; width: 100%; text-align: center; margin: 5px auto; color: blue; text-decoration: underline; cursor: pointer;"></a>' +
+											'<input id="btnRedditPlyr" class="vrdditBtn" type="button" style="display: block; margin: 5px auto 10px auto;" value="Copy">' +
+											'<label for="direct-input" style="display: block; margin: 5px auto;">Direct (No Sound)</label>' +
+											'<a href="' + urlDirectVideo + '" target="_blank"><input name="direct-input" value="' + urlDirectVideo + '" style="display: block; width: 100%; text-align: center; margin: 5px auto; color: blue; text-decoration: underline; cursor: pointer;"></a>' +
+											'<input id="btnDirectPlyr" class="vrdditBtn" type="button" style="display: block; margin: 5px auto 10px auto;" value="Copy">',
+										showCloseButton: true,
+										showConfirmButton: false
+									});
+									document.addEventListener("click", function(event) {
+										let element = event.target;
+										if (element.id === "btnCustomPlyr") {
+											copyToClipboard(urlCustomPlayer);
+										} else if (element.id === "btnRedditPlyr") {
+											copyToClipboard(urlRedditPlayer);
+										} else if (element.id === "btnDirectPlyr") {
+											copyToClipboard(urlDirectVideo);
+										}
+									});
+								}
+							}
+						} catch (error) {
+							// alert("Error: URL doesn't have a v.redd.it video");
+							swal({
+								title: "Error",
+								text: "URL doesn't have a v.redd.it video",
+								type: "error",
+								showCloseButton: true,
+								showConfirmButton: false
+							});
+						}
+					} else {
+						// alert(data.error + ": " + data.message);
+						swal({
+							title: data.error,
+							text: data.message,
+							type: "error",
+							showCloseButton: true,
+							showConfirmButton: false
+						});
+					}
+				};
+				request.onerror = function() {
+					let errorMessage = "Video request failed";
+					let isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+					if (isFirefox) {
+						errorMessage += " (Possibly blocked by Firefox's Tracking Protection)"
+					}
+					// alert("Error: " + errorMessage);
+					swal({
+						title: "Error",
+						text: errorMessage,
+						type: "error",
+						showCloseButton: true,
+						showConfirmButton: false
+					});
+				};
+				request.send();
+			};
+
+			dynamicallyLoadScript("https://www.vrddit.com/sweetalert2/sweetalert2.all.min.js");
+
+			// let urlVideo = prompt("Post URL:", "");
+			let urlVideo = window.location.href;
+			if (urlVideo) {
+				getVideoInfo(urlVideo);
+			} else {
+				// alert("URL not found");
+				swal({
+					title: "Error",
+					text: "URL not found",
+					type: "error",
+					showCloseButton: true,
+					showConfirmButton: false
+				});
+			}
+		};
+		let bookmarkString = bookmarkFunction.toString(); 
+		bookmarkString = bookmarkString.slice(bookmarkString.indexOf("{") + 1, bookmarkString.lastIndexOf("}"));
+		document.getElementById("link-bookmarklet").href = "javascript:" + encodeURI("(function(){" + bookmarkString + "})();");
+	</script>
+</body>
+</html>
