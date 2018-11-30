@@ -181,5 +181,8 @@ window.onload = function() {
 	let searchParams = new URLSearchParams(window.location.search);
 	if (searchParams.has("d") && searchParams.get("d")) {
 		requestPostData(searchParams.get("d"));
-	}
+	} else {
+    document.getElementsByClassName('loading-message')[0].innerHTML = "USAGE: Append ?d=[url-to-vreddit-post] to this url \
+    <br> EXAMPLE: ?d=https://www.reddit.com/r/PS4/comments/9e6coo";
+  }
 };
